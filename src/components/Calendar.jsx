@@ -1,13 +1,27 @@
 import React, { useState, useReducer, useEffect } from 'react'
 
-function getLeadingDays(state, date, startDay = 0) {
+const isToday = (someDate) => {
+    const today = new Date()
+    return (
+        someDate.getDate() == today.getDate() &&
+        someDate.getMonth() == today.getMonth() &&
+        someDate.getFullYear() == today.getFullYear()
+    )
+}
+
+function getLeadingDays(state, date, startDay = 1) {
     const result = []
     const year = date.getFullYear()
     const month = date.getMonth()
     const firstWeekday = new Date(year, month, 1).getDay()
-    const days = (firstWeekday + 7) - (startDay + 7) - 1
+    const days = firstWeekday === 0 ? 5 : firstWeekday - startDay - 1
     for (let i = days * -1; i <= 0; i++) {
-        result.push(new Date(year, month, i).getDate())
+        const tempDate = new Date(year, month, i)
+        result.push({
+            date: tempDate,
+            day: tempDate.getDate(),
+            color: isToday(tempDate) ? "green" : ""
+        })
     }
     return result
 }
@@ -17,7 +31,14 @@ function getMonthDays(state, date) {
     const year = date.getFullYear()
     const month = date.getMonth()
     const lastDay = new Date(year, month + 1, 0).getDate()
-    for (let i = 1; i <= lastDay; i++) result.push(i)
+    for (let i = 1; i <= lastDay; i++) {
+        const tempDate = new Date(year, month, i)
+        result.push({
+            date: tempDate,
+            day: tempDate.getDate(),
+            color: isToday(tempDate) ? "green" : ""
+        })
+    }
     return result
 }
 
@@ -31,14 +52,23 @@ const Calendar = () => {
     const [days, setDays] = useState([])
 
     useEffect(() => {
-        function getTrailingDays(leadingDays, monthDays) {
+        function getTrailingDays(leadingDays, monthDays, date) {
             const result = []
+            const year = date.getFullYear()
+            const month = date.getMonth()
             const days = 42 - (leadingDays.length + monthDays.length)
-            for (let i = 1; i <= days; i++) result.push(i)
+            for (let i = 1; i <= days; i++) {
+                const tempDate = new Date(year, month + 1, i)
+                result.push({
+                    date: tempDate,
+                    day: tempDate.getDate(),
+                    color: isToday(tempDate) ? "green" : ""
+                })
+            }
             return result
         }
         if (monthDays !== [] && leadingDays !== []) {
-            setTrailingDays(getTrailingDays(leadingDays, monthDays))
+            setTrailingDays(getTrailingDays(leadingDays, monthDays, date))
         }
     }, [leadingDays, monthDays])
 
@@ -78,7 +108,7 @@ const Calendar = () => {
                 <b style={{ width: 'calc(100% / 7)', display: 'inline-block' }}>Sa</b>
                 <b style={{ width: 'calc(100% / 7)', display: 'inline-block' }}>Di</b>
                 {days.map((item, index) => {
-                    return (<button style={{ width: 'calc(100% / 7)', display: 'inline-block' }} key={index}>{item}</button>)
+                    return (<button style={{ width: 'calc(100% / 7)', display: 'inline-block', backgroundColor: item.color }} key={index}>{item.day}</button>)
                 })}
             </div>
         </div>
