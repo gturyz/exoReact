@@ -72,7 +72,21 @@ const getDays = (date) => {
 const Calendar = () => {
   const [date, setDate] = useState(new Date());
 
+  const [rdv, setRdv] = useState([]);
+
+  const [selected, setSelected] = useState(new Date());
+
   const [days, setDays] = useState([]);
+
+  const handleRdv = (data) => {
+    setRdv([
+      ...rdv,
+      {
+        ...data,
+        date: new Date(data.date),
+      },
+    ]);
+  };
 
   useEffect(() => {
     setDays(getDays(date));
@@ -80,7 +94,7 @@ const Calendar = () => {
 
   return (
     <main>
-      <section style={{ textAlign: "center" }}>
+      <section style={{ width: "50%", textAlign: "center" }}>
         <button
           style={{ width: "calc(100% / 3)", display: "inline-block" }}
           onClick={() =>
@@ -97,7 +111,7 @@ const Calendar = () => {
           }
         >{`>>`}</button>
       </section>
-      <section style={{ textAlign: "center" }}>
+      <section style={{ width: "50%", textAlign: "center" }}>
         <button
           style={{ width: "calc(100% / 3)", display: "inline-block" }}
           onClick={() => setDate(new Date(date.setMonth(date.getMonth() - 1)))}
@@ -113,7 +127,7 @@ const Calendar = () => {
         >{`>>`}</button>
       </section>
 
-      <section style={{ textAlign: "center" }}>
+      <section style={{ width: "50%", float: "left", textAlign: "center" }}>
         <b style={{ width: "calc(100% / 7)", display: "inline-block" }}>Lu</b>
         <b style={{ width: "calc(100% / 7)", display: "inline-block" }}>Ma</b>
         <b style={{ width: "calc(100% / 7)", display: "inline-block" }}>Me</b>
@@ -122,22 +136,52 @@ const Calendar = () => {
         <b style={{ width: "calc(100% / 7)", display: "inline-block" }}>Sa</b>
         <b style={{ width: "calc(100% / 7)", display: "inline-block" }}>Di</b>
         {days.map((item, index) => {
+          const haveRdv = rdv.filter(
+            (rdvItem) =>
+              rdvItem.date.getDate() === item.date.getDate() &&
+              rdvItem.date.getMonth() === item.date.getMonth() &&
+              rdvItem.date.getFullYear() === item.date.getFullYear()
+          );
+          console.log(haveRdv);
           return (
             <button
               style={{
                 width: "calc(100% / 7)",
                 display: "inline-block",
-                backgroundColor: item.backgroundColor,
+                backgroundColor:
+                  haveRdv.length > 0 ? "red" : item.backgroundColor,
                 color: item.color,
               }}
               key={index}
+              onClick={() => setSelected(item.date)}
             >
               {item.day}
             </button>
           );
         })}
       </section>
-      <RDV />
+      <section
+        style={{
+          width: "50%",
+          float: "right",
+          minHeight: 250,
+        }}
+      >
+        <h4>Liste des rdv pour le {selected.toLocaleDateString("fr-FR")}</h4>
+        <ul>
+          {rdv
+            .filter(
+              (rdvItem) =>
+                rdvItem.date.getDate() === selected.getDate() &&
+                rdvItem.date.getMonth() === selected.getMonth() &&
+                rdvItem.date.getFullYear() === selected.getFullYear()
+            )
+            .map((item) => (
+              <li>{item.title}</li>
+            ))}
+        </ul>
+      </section>
+      <RDV createRdv={handleRdv} />
     </main>
   );
 };
