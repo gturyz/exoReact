@@ -1,15 +1,15 @@
-import React, { useState, useReducer, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const isToday = (someDate) => {
     const today = new Date()
     return (
-        someDate.getDate() == today.getDate() &&
-        someDate.getMonth() == today.getMonth() &&
-        someDate.getFullYear() == today.getFullYear()
+        someDate.getDate() === today.getDate() &&
+        someDate.getMonth() === today.getMonth() &&
+        someDate.getFullYear() === today.getFullYear()
     )
 }
 
-function getLeadingDays(state, date, startDay = 1) {
+function getLeadingDays(date, startDay = 1) {
     const result = []
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -20,13 +20,14 @@ function getLeadingDays(state, date, startDay = 1) {
         result.push({
             date: tempDate,
             day: tempDate.getDate(),
-            color: isToday(tempDate) ? "green" : ""
+            backgroundColor: isToday(tempDate) ? "green" : "",
+            color: "grey"
         })
     }
     return result
 }
 
-function getMonthDays(state, date) {
+function getMonthDays(date) {
     const result = []
     const year = date.getFullYear()
     const month = date.getMonth()
@@ -36,50 +37,46 @@ function getMonthDays(state, date) {
         result.push({
             date: tempDate,
             day: tempDate.getDate(),
-            color: isToday(tempDate) ? "green" : ""
+            backgroundColor: isToday(tempDate) ? "black" : "",
+            color: isToday(tempDate) ? "white" : ""
         })
     }
     return result
 }
 
+function getTrailingDays(leadingDays, monthDays, date) {
+    const result = []
+    const year = date.getFullYear()
+    const month = date.getMonth()
+    const days = 42 - (leadingDays.length + monthDays.length)
+    for (let i = 1; i <= days; i++) {
+        const tempDate = new Date(year, month + 1, i)
+        result.push({
+            date: tempDate,
+            day: tempDate.getDate(),
+            backgroundColor: isToday(tempDate) ? "green" : "",
+            color: "grey"
+        })
+    }
+    return result
+}
+
+const getDays = (date) => {
+    const leadingDays = getLeadingDays(date)
+    const monthDays = getMonthDays(date)
+    const trailingDays = getTrailingDays(leadingDays, monthDays, date)
+    return [...leadingDays, ...monthDays, ...trailingDays]
+}
+
 const Calendar = () => {
 
     const [date, setDate] = useState(new Date())
-    const [leadingDays, setLeadingDays] = useReducer(getLeadingDays, [])
-    const [monthDays, setMonthDays] = useReducer(getMonthDays, [])
-    const [trailingDays, setTrailingDays] = useState([])
 
     const [days, setDays] = useState([])
 
     useEffect(() => {
-        function getTrailingDays(leadingDays, monthDays, date) {
-            const result = []
-            const year = date.getFullYear()
-            const month = date.getMonth()
-            const days = 42 - (leadingDays.length + monthDays.length)
-            for (let i = 1; i <= days; i++) {
-                const tempDate = new Date(year, month + 1, i)
-                result.push({
-                    date: tempDate,
-                    day: tempDate.getDate(),
-                    color: isToday(tempDate) ? "green" : ""
-                })
-            }
-            return result
-        }
-        if (monthDays !== [] && leadingDays !== []) {
-            setTrailingDays(getTrailingDays(leadingDays, monthDays, date))
-        }
-    }, [leadingDays, monthDays])
-
-    useEffect(() => {
-        setLeadingDays(date)
-        setMonthDays(date)
+        setDays(getDays(date))
     }, [date])
-
-    useEffect(() => {
-        setDays([...leadingDays, ...monthDays, ...trailingDays])
-    }, [leadingDays, trailingDays, monthDays])
 
     return (
         <div>
@@ -108,7 +105,7 @@ const Calendar = () => {
                 <b style={{ width: 'calc(100% / 7)', display: 'inline-block' }}>Sa</b>
                 <b style={{ width: 'calc(100% / 7)', display: 'inline-block' }}>Di</b>
                 {days.map((item, index) => {
-                    return (<button style={{ width: 'calc(100% / 7)', display: 'inline-block', backgroundColor: item.color }} key={index}>{item.day}</button>)
+                    return (<button style={{ width: 'calc(100% / 7)', display: 'inline-block', backgroundColor: item.backgroundColor, color: item.color }} key={index}>{item.day}</button>)
                 })}
             </div>
         </div>
